@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Back In Shape — Household Meal Plan v6</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
+  :root {
+    --navy: #1B3A5C; --teal: #2A7E7E; --amber: #C97A1A; --green: #1F7A4A;
+    --red: #C0392B; --bg: #FAFBFC; --card: #FFFFFF; --border: #E2E8F0;
+    --text: #1A202C; --muted: #64748B; --light: #F1F5F9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+  .container { max-width:1100px; margin:0 auto; padding:16px; }
+  header { background:var(--navy); color:white; padding:28px 0 20px; text-align:center; }
+  header h1 { font-size:1.7em; font-weight:800; letter-spacing:-0.5px; }
+  header p { opacity:0.8; font-size:0.88em; margin-top:4px; }
+  .tabs { display:flex; gap:4px; margin:20px 0 0; background:var(--light); border-radius:10px; padding:4px; border:1px solid var(--border); }
+  .tab { flex:1; padding:11px 10px; border-radius:8px; border:none; cursor:pointer; font-family:inherit;
+    font-size:0.82em; font-weight:600; color:var(--muted); background:transparent; transition:all .2s; }
+  .tab:hover { color:var(--text); background:white; }
+  .tab.active { background:var(--navy); color:white; box-shadow:0 2px 8px rgba(27,58,92,.25); }
+  .panel { display:none; } .panel.active { display:block; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:16px; }
+  .card h2 { font-size:1.1em; font-weight:700; color:var(--navy); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .card h3 { font-size:0.92em; font-weight:700; color:var(--teal); margin:16px 0 8px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.7em; font-weight:700; }
+  .badge-protein { background:#EBF5FF; color:#1E40AF; } .badge-veg { background:#ECFDF5; color:#065F46; }
+  .badge-snack { background:#FFFBEB; color:#92400E; } .badge-child { background:#FFF1F2; color:#9F1239; }
+  .badge-kit { background:#F3E8FF; color:#6B21A8; } .badge-confirmed { background:#DCFCE7; color:#166534; }
+  .badge-estimated { background:#FEF3C7; color:#92400E; }
+
+  table { width:100%; border-collapse:collapse; font-size:0.82em; margin-top:8px; }
+  th { background:var(--navy); color:white; padding:9px 10px; text-align:left; font-weight:600; font-size:0.85em; letter-spacing:0.3px; }
+  td { padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+  tr:nth-child(even) td { background:#F8FAFC; }
+  td a { color:var(--teal); text-decoration:none; font-weight:500; }
+  td a:hover { text-decoration:underline; }
+  .price { font-family:'JetBrains Mono',monospace; font-weight:500; white-space:nowrap; }
+  .macro { font-size:0.78em; color:var(--muted); margin-top:2px; }
+  .macro b { color:var(--text); }
+
+  .day-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin-top:12px; }
+  .day-card { border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .day-header { padding:8px 12px; font-weight:700; font-size:0.82em; color:white; }
+  .day-header.home { background:var(--teal); } .day-header.london { background:var(--amber); }
+  .day-header.anchor { background:var(--navy); }
+  .day-body { padding:10px 12px; font-size:0.8em; }
+  .day-body .meal { margin-bottom:8px; }
+  .day-body .meal-label { font-weight:700; color:var(--navy); font-size:0.78em; text-transform:uppercase; letter-spacing:0.5px; }
+  .day-body .child-meal { background:#FFF1F2; padding:6px 8px; border-radius:5px; margin-top:4px; font-size:0.92em; }
+  .day-body .child-meal .meal-label { color:#9F1239; }
+
+  .batch-step { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .batch-step:last-child { border-bottom:none; }
+  .batch-num { width:32px; height:32px; border-radius:50%; background:var(--teal); color:white;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85em; flex-shrink:0; }
+  .batch-text { flex:1; }
+  .batch-text strong { color:var(--navy); }
+  .batch-text .time { font-family:'JetBrains Mono',monospace; font-size:0.85em; color:var(--amber); font-weight:500; }
+
+  .kit-item { display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+  .kit-item:last-child { border-bottom:none; }
+  .kit-icon { width:40px; height:40px; border-radius:8px; background:var(--light); display:flex;
+    align-items:center; justify-content:center; font-size:1.3em; flex-shrink:0; }
+  .kit-info { flex:1; } .kit-info h4 { font-size:0.9em; font-weight:700; color:var(--navy); }
+  .kit-info p { font-size:0.82em; color:var(--muted); margin-top:2px; }
+  .kit-info a { color:var(--teal); font-size:0.82em; }
+  .kit-price { font-family:'JetBrains Mono',monospace; font-weight:600; font-size:0.9em; color:var(--green); white-space:nowrap; }
+
+  .callout { padding:14px 16px; border-radius:8px; margin:12px 0; font-size:0.85em; }
+  .callout-amber { background:#FEF3C7; border-left:4px solid var(--amber); }
+  .callout-green { background:#DCFCE7; border-left:4px solid var(--green); }
+  .callout-navy { background:#EBF5FF; border-left:4px solid var(--navy); }
+  .callout strong { font-weight:700; }
+
+  .week-toggle { display:flex; gap:4px; margin-bottom:14px; }
+  .week-btn { padding:8px 18px; border:2px solid var(--navy); border-radius:6px; background:transparent;
+    font-family:inherit; font-weight:700; font-size:0.82em; cursor:pointer; color:var(--navy); transition:all .2s; }
+  .week-btn.active { background:var(--navy); color:white; }
+  .week-content { display:none; } .week-content.active { display:block; }
+
+  .total-row td { font-weight:700; background:#EBF5FF !important; border-top:2px solid var(--navy); }
+  .section-divider { margin:24px 0 16px; padding:10px 14px; background:var(--light); border-radius:6px;
+    font-weight:700; color:var(--navy); font-size:0.9em; }
+  .recipe { background:var(--card); border:1px solid var(--border); border-radius:8px; margin-bottom:10px; overflow:hidden; }
+  .recipe-header { padding:12px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+    font-weight:700; font-size:0.9em; color:var(--navy); background:var(--light); border-bottom:1px solid var(--border); }
+  .recipe-header:hover { background:#E8EDF2; }
+  .recipe-header .meta { font-weight:500; font-size:0.82em; color:var(--muted); }
+  .recipe-body { padding:0; max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .recipe-body.open { max-height:2000px; padding:14px 16px; }
+  .recipe-body h4 { font-size:0.85em; font-weight:700; color:var(--teal); margin:10px 0 6px; text-transform:uppercase; letter-spacing:0.5px; }
+  .recipe-body h4:first-child { margin-top:0; }
+  .recipe-body ul { padding-left:18px; margin:4px 0 8px; font-size:0.85em; }
+  .recipe-body ul li { margin-bottom:3px; }
+  .recipe-body ol { padding-left:18px; margin:4px 0 8px; font-size:0.85em; }
+  .recipe-body ol li { margin-bottom:5px; line-height:1.5; }
+  .recipe-body .tip { background:#FEF3C7; padding:8px 12px; border-radius:6px; font-size:0.83em; margin-top:8px; }
+  .recipe-body .macro-line { font-family:'JetBrains Mono',monospace; font-size:0.8em; color:var(--muted); margin-top:6px; }
+  footer { text-align:center; padding:24px 0; font-size:0.78em; color:var(--muted); }
+  .order-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .order-item:last-child { border-bottom:none; }
+  .order-check { width:22px; height:22px; accent-color:var(--green); cursor:pointer; flex-shrink:0; }
+  .order-link { flex:1; }
+  .order-link a { color:var(--teal); text-decoration:none; font-weight:600; font-size:0.88em; }
+  .order-link a:hover { text-decoration:underline; }
+  .order-link .qty { font-size:0.8em; color:var(--muted); font-weight:400; margin-left:6px; }
+  .order-done { text-decoration:line-through !important; opacity:0.4; }
+  .copy-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border:2px solid var(--teal);
+    border-radius:6px; background:white; color:var(--teal); font-family:inherit; font-weight:700;
+    font-size:0.82em; cursor:pointer; transition:all .2s; margin:8px 0; }
+  .copy-btn:hover { background:var(--teal); color:white; }
+  .copy-btn.copied { background:var(--green); border-color:var(--green); color:white; }
+  .progress-bar { height:8px; background:var(--light); border-radius:4px; margin:12px 0; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--green); border-radius:4px; transition:width 0.3s; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>Back In Shape — Household Meal Plan</h1>
+    <p>v6 • Waitrose Essential • 3 Adults + 1 Child (age 6) • Two-Week Rotation • DREO ChefMaker + Slow Cooker</p>
+  </div>
+</header>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('ingredients')">🛒 Ingredients</button>
+    <button class="tab" onclick="showTab('meals')">🍽️ Meals</button>
+    <button class="tab" onclick="showTab('recipes')">📖 Recipes</button>
+    <button class="tab" onclick="showTab('kit')">🔧 Kit</button>
+    <button class="tab" onclick="showTab('order')">🛒 Order Helper</button>
+  </div>
+
+  <!-- ═══════ TAB 1: INGREDIENTS ═══════ -->
+  <div id="ingredients" class="panel active">
+
+    <div class="callout callout-navy">
+      <strong>Two-shop system:</strong> The weekly fresh shop covers perishables (~£120). The stock cupboard shop covers tins, dry goods, and freezer items (~£60, bought fortnightly). Set up Waitrose Favourites lists for both — reorder weekly in 3 minutes.
+      <br><span class="badge badge-confirmed">✓ Confirmed</span> = live price from trolley.co.uk.
+      <span class="badge badge-estimated">~ Estimated</span> = Essential range pricing.
+      <br><strong>Note:</strong> Mackerel suspended by Waitrose from April 2026 (overfishing). Replaced with hot smoked herring and tinned sardines throughout.
+    </div>
+
+    <div class="section-divider">🛒 WEEKLY FRESH SHOP — Buy Every Week (~£120)
+      <button class="copy-btn" style="float:right;margin:0;" onclick="copyAll(this, 'fresh')">📋 Copy ALL Fresh Items</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-protein">PROTEIN</span> Fresh Proteins (3 adults)</h2>
+      <button class="copy-btn" onclick="copyList(this, 'fresh-protein')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Waitrose Product</th><th>Qty</th><th>Price</th><th>Keeps</th></tr>
+        <tr><td><strong>Chicken thighs</strong></td><td><a href="https://www.waitrose.com/ecom/products/essential-waitrose-12-british-chicken-thigh-fillets/002713-948-949" target="_blank">Essential Chicken Thigh Fillets, S&B — Large</a></td><td>2 × 1 kg</td><td class="price">£21.90 <span class="badge badge-confirmed">✓</span></td><td>3 days raw / 5 days cooked</td></tr>
+        <tr><td><strong>Salmon fillets</strong></td><td><a href="https://www.trolley.co.uk/product/waitrose-4-scottish-salmon-fillets/YIQ771" target="_blank">Waitrose 4 Scottish Salmon Fillets (480g)</a></td><td>2 packs (8)</td><td class="price">£21.00 <span class="badge badge-confirmed">✓</span></td><td>2 days raw — cook Fri</td></tr>
+        <tr><td><strong>Hot smoked herring</strong></td><td>Waitrose Hot Smoked Herring Fillets (~200g)</td><td>3 packs</td><td class="price">~£9.00 <span class="badge badge-estimated">~</span></td><td>5–7 days sealed</td></tr>
+        <tr><td><strong>Eggs (free range)</strong></td><td><a href="https://www.waitrose.com/ecom/products/essential-free-range-white-eggs/856706-653765-653766" target="_blank">Essential Free Range White Eggs 6-pk</a></td><td>5 packs (30)</td><td class="price">£6.50 <span class="badge badge-confirmed">✓</span></td><td>3–4 weeks</td></tr>
+        <tr><td><strong>Greek yoghurt 0%</strong></td><td><a href="https://www.waitrose.com/ecom/products/essential-fat-free-greek-style-natural-yogurt/822557-405816-405817" target="_blank">Essential Fat Free Greek Style Yogurt 500g</a></td><td>4 × 500g</td><td class="price">~£4.80 <span class="badge badge-estimated">~</span></td><td>7 days once opened</td></tr>
+        <tr><td><strong>Turkey mince</strong></td><td><a href="https://www.trolley.co.uk/product/essential-british-turkey-thigh-mince/SXE787" target="_blank">Essential 8% Fat Turkey Thigh Mince 500g</a></td><td>2 × 500g</td><td class="price">£9.00 <span class="badge badge-confirmed">✓</span></td><td>2 days raw — cook Sun</td></tr>
+        <tr><td><strong>Cottage cheese</strong></td><td>Essential Cottage Cheese 300g</td><td>1 tub</td><td class="price">~£1.50 <span class="badge badge-estimated">~</span></td><td>5 days once opened</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-veg">FRESH</span> Fresh Veg, Fruit & Dairy</h2>
+      <button class="copy-btn" onclick="copyList(this, 'fresh-veg')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Waitrose Product</th><th>Qty</th><th>Price</th><th>Keeps</th></tr>
+        <tr><td><strong>Salad leaves</strong></td><td>Essential Mixed Salad Leaves</td><td>3 bags</td><td class="price">~£2.40</td><td>3–4 days — use Mon–Thu</td></tr>
+        <tr><td><strong>Cherry tomatoes</strong></td><td>Essential Cherry Tomatoes 400g</td><td>2 packs</td><td class="price">~£2.40</td><td>5–7 days</td></tr>
+        <tr><td><strong>Cucumber</strong></td><td>Essential Cucumber</td><td>2</td><td class="price">~£1.20</td><td>7 days whole</td></tr>
+        <tr><td><strong>Broccoli</strong></td><td>Essential Broccoli</td><td>2 heads</td><td class="price">~£1.60</td><td>5 days in fridge</td></tr>
+        <tr><td><strong>Green beans</strong></td><td>Essential Fine Green Beans 300g</td><td>2 bags</td><td class="price">~£2.20</td><td>4–5 days</td></tr>
+        <tr><td><strong>Avocado</strong></td><td>Essential Perfectly Ripe Avocados</td><td>4</td><td class="price">~£2.00</td><td>3–5 days once ripe</td></tr>
+        <tr><td><strong>Bananas</strong></td><td>Essential Bananas</td><td>2 bunches</td><td class="price">~£1.40</td><td>5–7 days</td></tr>
+        <tr><td><strong>Apples</strong></td><td>Essential Apples 6-pack</td><td>2 packs</td><td class="price">~£2.40</td><td>2+ weeks in fridge</td></tr>
+        <tr><td><strong>Blueberries</strong></td><td>Essential Blueberries</td><td>2 punnets</td><td class="price">~£3.00</td><td>5–7 days</td></tr>
+        <tr><td><strong>Skimmed milk</strong></td><td><a href="https://www.trolley.co.uk/product/essential-waitrose-british-free-range-semi-skimmed-milk/DOE020" target="_blank">Essential Free Range Milk 2pt</a></td><td>3 cartons</td><td class="price">£3.75 <span class="badge badge-confirmed">✓</span></td><td>7 days once opened</td></tr>
+        <tr><td><strong>Bread</strong></td><td>Essential Wholemeal Bread 800g</td><td>1 loaf</td><td class="price">~£1.20</td><td>5 days (freeze half)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-child">CHILD</span> Fresh Child Items (weekly)</h2>
+      <button class="copy-btn" onclick="copyList(this, 'fresh-child')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Product</th><th>Qty</th><th>Price</th><th>Notes</th></tr>
+        <tr><td><strong>Sausages</strong></td><td>Essential Pork Sausages 454g</td><td>1 pack</td><td class="price">~£2.50</td><td>Use within 3 days or freeze</td></tr>
+        <tr><td><strong>Bacon</strong></td><td>Essential Smoked Back Bacon 250g</td><td>1 pack</td><td class="price">~£2.50</td><td>7 days sealed</td></tr>
+        <tr><td><strong>Grapes</strong></td><td>Essential Seedless Grapes</td><td>2 bags</td><td class="price">~£4.00</td><td>5–7 days. Cut in half.</td></tr>
+        <tr><td><strong>Pineapple</strong></td><td>Fresh pineapple or tinned in juice</td><td>1</td><td class="price">~£1.50</td><td>5 days once cut</td></tr>
+      </table>
+    </div>
+
+    <div class="callout callout-green">
+      <strong>Weekly fresh shop total: ~£120.</strong> This is the order you place every week from your "Weekly Fresh" Waitrose Favourites list. Reorder in 3 minutes — click "Add all to trolley," adjust quantities, checkout.
+    </div>
+
+    <div class="section-divider">📦 STOCK CUPBOARD — Buy Fortnightly (~£60–70)
+      <button class="copy-btn" style="float:right;margin:0;" onclick="copyAll(this, 'stock')">📋 Copy ALL Stock Items</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-snack">TINS & DRY</span> Tins, Dry Goods & Cupboard Essentials</h2>
+      <button class="copy-btn" onclick="copyList(this, 'stock-tins')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Product</th><th>Qty</th><th>Price</th><th>Shelf Life</th></tr>
+        <tr><td><strong>Tinned sardines (tomato)</strong></td><td>Essential Sardines in Tomato Sauce</td><td>4 tins</td><td class="price">~£6.20</td><td>2+ years</td></tr>
+        <tr><td><strong>Chopped tomatoes</strong></td><td>Essential Chopped Tomatoes 400g</td><td>4 tins</td><td class="price">~£2.40</td><td>2+ years</td></tr>
+        <tr><td><strong>Coconut milk</strong></td><td>Essential Coconut Milk 400ml</td><td>2 tins</td><td class="price">~£2.40</td><td>2+ years</td></tr>
+        <tr><td><strong>Baked beans</strong></td><td>Essential Baked Beans 4-pk</td><td>1 pack</td><td class="price">~£1.80</td><td>2+ years. Emergency child dinner.</td></tr>
+        <tr><td><strong>Tomato purée</strong></td><td>Essential Tomato Purée 200g</td><td>1 tube</td><td class="price">~£0.70</td><td>Months</td></tr>
+        <tr><td><strong>Rolled oats</strong></td><td><a href="https://www.trolley.co.uk/product/essential-porridge-oats/SEK709" target="_blank">Essential Porridge Oats 1kg</a></td><td>2 bags</td><td class="price">£2.50 <span class="badge badge-confirmed">✓</span></td><td>Months</td></tr>
+        <tr><td><strong>Brown rice</strong></td><td>Essential Brown Basmati Rice 500g</td><td>1 bag</td><td class="price">~£1.80</td><td>Months</td></tr>
+        <tr><td><strong>Red lentils</strong></td><td>Essential Red Lentils 500g</td><td>1 bag</td><td class="price">~£1.30</td><td>Months. Slow cooker dhal.</td></tr>
+        <tr><td><strong>Pasta</strong></td><td>Essential Penne 500g</td><td>2 packs</td><td class="price">~£1.50</td><td>Months</td></tr>
+        <tr><td><strong>Chia seeds</strong></td><td>Waitrose Chia Seeds 200g</td><td>1 bag</td><td class="price">~£2.50</td><td>Months</td></tr>
+        <tr><td><strong>Stock cubes</strong></td><td>Essential Vegetable Stock Cubes</td><td>1 box</td><td class="price">~£0.80</td><td>Months</td></tr>
+        <tr><td><strong>Soy sauce</strong></td><td>Essential Dark Soy Sauce</td><td>1 bottle</td><td class="price">~£1.20</td><td>Months</td></tr>
+        <tr><td><strong>Instant noodles</strong></td><td>Essential Chicken Noodles 4-pk</td><td>1 pack</td><td class="price">~£1.50</td><td>Months</td></tr>
+        <tr><td><strong>Mac & cheese</strong></td><td>Essential Mac & Cheese box</td><td>1</td><td class="price">~£1.00</td><td>Months</td></tr>
+        <tr><td><strong>Ground coffee</strong></td><td>Essential Italian Style Ground Coffee 227g</td><td>1 pack</td><td class="price">~£3.00</td><td>Months. Bialetti.</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-snack">SNACKS</span> Snacks, Fats & Longer-Life Items</h2>
+      <button class="copy-btn" onclick="copyList(this, 'stock-snacks')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Product</th><th>Qty</th><th>Price</th><th>Shelf Life</th></tr>
+        <tr><td><strong>Mixed nuts</strong></td><td><a href="https://www.trolley.co.uk/product/waitrose-mixed-nuts/LXE670" target="_blank">Waitrose Mixed Nuts 400g</a></td><td>2 bags</td><td class="price">£13.50 <span class="badge badge-confirmed">✓</span></td><td>Months sealed</td></tr>
+        <tr><td><strong>Almond butter</strong></td><td>Meridian Smooth Almond Butter 470g</td><td>1 jar</td><td class="price">~£6.50</td><td>Months</td></tr>
+        <tr><td><strong>Rice cakes</strong></td><td>Kallo Plain Rice Cakes</td><td>2 packs</td><td class="price">~£3.00</td><td>Months</td></tr>
+        <tr><td><strong>Dark chocolate 85%</strong></td><td>Lindt Excellence 85% Dark 100g</td><td>2 bars</td><td class="price">~£4.00</td><td>Months</td></tr>
+        <tr><td><strong>Olive oil</strong></td><td>Essential Olive Oil 500ml</td><td>1 bottle</td><td class="price">~£3.00</td><td>Months</td></tr>
+        <tr><td><strong>Honey</strong></td><td>Essential Clear Honey</td><td>1 jar</td><td class="price">~£2.00</td><td>Years</td></tr>
+        <tr><td><strong>Sparkling water</strong></td><td>Essential Sparkling Water 8-pk cans</td><td>2 packs</td><td class="price">~£4.00</td><td>Months</td></tr>
+        <tr><td><strong>Sweet potatoes</strong></td><td>Essential Sweet Potatoes</td><td>~800g</td><td class="price">~£1.50</td><td>2–3 weeks cool dark place</td></tr>
+        <tr><td><strong>Cheddar cheese</strong></td><td>Essential Mature Cheddar 400g</td><td>1 block</td><td class="price">~£3.50</td><td>2–3 weeks sealed</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-child">FROZEN</span> Freezer Items (fortnightly)</h2>
+      <button class="copy-btn" onclick="copyList(this, 'stock-frozen')">📋 Copy for Waitrose Multi-Search</button>
+      <table>
+        <tr><th>Item</th><th>Product</th><th>Qty</th><th>Price</th><th>Notes</th></tr>
+        <tr><td><strong>Frozen peas</strong></td><td>Essential Garden Peas 900g</td><td>1 bag</td><td class="price">~£1.50</td><td>Months. Child veg + egg fried rice.</td></tr>
+        <tr><td><strong>Fish fingers</strong></td><td>Essential Fish Fingers 10-pk</td><td>1 box</td><td class="price">~£2.50</td><td>Months. ChefMaker Air Fry 200°C, 10 min.</td></tr>
+      </table>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Stock cupboard total: ~£65.</strong> Buy fortnightly — effective weekly cost ~£32. Most items last months, so after the initial shop you only top up what you've used. Set up as a second Waitrose Favourites list.
+    </div>
+
+    <div class="callout callout-green">
+      <strong>Effective weekly cost: ~£152</strong> (£120 fresh + £32 stock averaged). That's £38/person/week or £5.40/person/day.<br>
+      <strong>Not at Waitrose:</strong> Whey protein (~£25/month from <a href="https://www.myprotein.com" target="_blank">myprotein.com</a>) •
+      Nuun electrolytes (~£8/tube from <a href="https://www.amazon.co.uk" target="_blank">amazon.co.uk</a>)
+    </div>
+  </div>
+
+  <!-- ═══════ TAB 2: MEALS & BATCH PLAN ═══════ -->
+  <div id="meals" class="panel">
+
+    <div class="card">
+      <h2>📋 The Three Cooking Moments</h2>
+      <p style="font-size:0.88em;color:var(--muted);margin-bottom:14px;">Only one parent cooks (Roderick) on Mon, Fri, Sat, Sun. Tue–Thu nobody cooks — everything is reheated from Sunday/Monday batch. Child eats at 5:30–6:30pm separately.</p>
+
+      <div class="batch-step">
+        <div class="batch-num">1</div>
+        <div class="batch-text">
+          <strong>Sunday ~10:00am (after anchor session)</strong> <span class="time">90 min total, 15 min active</span><br>
+          ChefMaker: batch cook 2kg chicken thighs in 2 batches (Chef Mode → Poultry with probe, ~20 min per batch — crispier and juicier than oven). Slow cooker: brown turkey mince + onion (8 min on hob), dump into slow cooker with tinned tomatoes, set LOW — Bolognese ready by 3pm with zero monitoring. Hob: cook 300g brown rice (25 min passive) + hard-boil 6 eggs. Portion everything into labelled containers.
+        </div>
+      </div>
+      <div class="batch-step">
+        <div class="batch-num">2</div>
+        <div class="batch-text">
+          <strong>Monday evening ~20:00</strong> <span class="time">25 min active</span><br>
+          Build 3 overnight oats jars (8 min). Chop salad veg into 3 lunch boxes (10 min). Portion nuts + fruit into 3 snack bags (5 min). Pack hard-boiled eggs into lunch containers. Done — Tue/Wed/Thu is now grab-and-go.
+        </div>
+      </div>
+      <div class="batch-step">
+        <div class="batch-num">3</div>
+        <div class="batch-text">
+          <strong>Friday evening ~19:30</strong> <span class="time">25–30 min active</span><br>
+          One proper cooked dinner. ChefMaker: air fry sweet potato cubes + broccoli (190°C, 15 min), then salmon fillets (Chef Mode → Seafood with probe, ~10 min — probe beeps when done, no guessing). Week B: salmon en papillote stays in oven (parchment + air fryer fan don't mix). Fastest fresh dinner of the week.
+        </div>
+      </div>
+    </div>
+
+    <div class="week-toggle">
+      <button class="week-btn active" onclick="showWeek('a')">Week A: Chicken-Forward</button>
+      <button class="week-btn" onclick="showWeek('b')">Week B: Variety Week</button>
+    </div>
+
+    <div id="week-a" class="week-content active">
+      <div class="day-grid">
+        <div class="day-card"><div class="day-header anchor">SUN — ANCHOR (Batch Cook Day)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Batch cook ~10am</div>ChefMaker: chicken thighs in 2 batches (Chef Mode → Poultry, 20 min each). Slow cooker: Bolognese on LOW from 9am. Hob: rice pot + hard-boil eggs. All parallel — 15 min active.</div>
+          <div class="meal"><div class="meal-label">Breakfast</div>Big brunch: poached eggs (Babs), scrambled (Rod) + bacon + toast. Child joins.</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Light: soup or leftovers from previous week</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Simple: batch chicken + all remaining veg — family meal</div>
+          <div class="child-meal"><div class="meal-label">Child</div>Brunch is the main event. Light tea: toast + fruit + yoghurt. Or beans on toast.</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">MON — HOME (Cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Poached eggs for Babs (2) + yoghurt + blueberries. Rod: hard-boiled eggs (3) grab-and-go if needed</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Chicken salad bowl (leaves, tomato, cucumber, avocado, rice)</div>
+          <div class="meal"><div class="meal-label">Dinner (Roderick cooks)</div>Turkey mince Bolognese + brown rice (from Sunday batch) or pasta</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Same Bolognese over penne + grated cheddar ✨ Cross-over meal</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">TUE — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar (grab from fridge)</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: chicken + salad + 2 hard-boiled eggs</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: batch chicken + rice + broccoli (ChefMaker Reheat 160°C, 8 min)</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Sausages + peas + mash — ChefMaker Air Fry 190°C, 14 min (no preheat)</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">WED — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: sardines in tomato sauce flaked + salad + eggs</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: chicken stir-fry portion + rice (ChefMaker Reheat 160°C, 8 min)</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Fish fingers + peas — ChefMaker Air Fry 200°C, 10 min (no preheat)</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">THU — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: sardines in tomato sauce + rice cakes + apple</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: last batch chicken portion + green beans + rice</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Mac & cheese (box, 12 min) — or instant noodles + peas if easier</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">FRI — HOME (Cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Poached eggs for Babs (2) + yoghurt + blueberries. Rod: hard-boiled eggs (3) or scrambled</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Cottage cheese salad bowl + avocado</div>
+          <div class="meal"><div class="meal-label">Dinner (Roderick cooks)</div>Salmon (ChefMaker Seafood + probe) + air fried broccoli + sweet potato 🐟</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Bacon penne + cheddar (simple carbonara, 12 min)</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">SAT — HOME (Cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Yoghurt + oats + blueberries bowl</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Herring salad + rice (post-training fuel)</div>
+          <div class="meal"><div class="meal-label">Dinner (Roderick cooks)</div>Chicken thighs (lemon herb) + green beans + rice — family meal</div>
+          <div class="child-meal"><div class="meal-label">Child dinner</div>Joins adult meal ✨ Child portion chicken + rice + peas</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div id="week-b" class="week-content">
+      <div class="day-grid">
+        <div class="day-card"><div class="day-header anchor">SUN — ANCHOR (Batch Cook Day)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Batch cook ~10am</div>ChefMaker: paprika chicken thighs in 2 batches (Chef Mode → Poultry, 20 min each). Slow cooker: turkey chilli on LOW from 9am. Hob: rice pot + hard-boil eggs. All parallel.</div>
+          <div class="meal"><div class="meal-label">Breakfast</div>Big brunch: poached eggs (Babs) + herring on toast. Rod: scrambled eggs. Child: eggs + soldiers.</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Leftovers or simple soup + bread</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Family tray bake: chicken + sweet potato + all remaining veg</div>
+          <div class="child-meal"><div class="meal-label">Child</div>Joins family tray bake — child portion. Or banana + yoghurt if brunch was big.</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">MON — HOME (Cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar (banana + chia variation)</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Herring salad bowl (leaves, tomato, avocado, lemon)</div>
+          <div class="meal"><div class="meal-label">Dinner (Roderick cooks)</div>Egg fried rice (eggs, brown rice, peas, soy, ginger) — veggie night 🥬</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Same egg fried rice ✨ Often a child favourite</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">TUE — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar (blueberries + whey)</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: chicken + salad + hard-boiled eggs</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: paprika chicken tray bake + green beans + sweet potato</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Fish fingers + sweet potato wedges — ChefMaker Air Fry 190°C, 15 min</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">WED — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: sardines in tomato sauce + rice cakes + cucumber + apple</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: batch chicken + rice + broccoli</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Penne + butter + parmesan (simple, 10 min)</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header london">THU — LONDON (No cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Overnight oats jar</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Packed: cottage cheese + salad + eggs</div>
+          <div class="meal"><div class="meal-label">Dinner</div>Reheat: turkey mince chilli + rice + yoghurt dollop</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Same chilli sauce over penne + cheddar ✨ Cross-over</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">FRI — HOME (Cook)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Poached eggs for Babs (2) + yoghurt + apple slices. Rod: hard-boiled eggs (3) or scrambled</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Chicken salad bowl + avocado</div>
+          <div class="meal"><div class="meal-label">Dinner (Roderick cooks)</div>Salmon en papillote (oven) + ChefMaker air fried veg + sweet potato 🐟</div>
+          <div class="child-meal"><div class="meal-label">Child 5:30pm</div>Sausages + peas + mash (15 min)</div>
+        </div></div>
+
+        <div class="day-card"><div class="day-header home">SAT — HOME (Cook / Slow Cooker)</div><div class="day-body">
+          <div class="meal"><div class="meal-label">Breakfast</div>Yoghurt bowl + blueberries + oats</div>
+          <div class="meal"><div class="meal-label">Lunch</div>Turkey mince lettuce wraps or leftovers</div>
+          <div class="meal"><div class="meal-label">Dinner (Slow cooker)</div>Red lentil dhal 🍲 Set slow cooker at lunchtime — lentils, tinned tomatoes, coconut milk, cumin, turmeric. Ready by 6pm. Serve with brown rice. High protein, very low effort.</div>
+          <div class="child-meal"><div class="meal-label">Child dinner</div>Dhal with rice (mild version — leave out chilli) ✨ or fallback: beans on toast + fruit</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="callout callout-amber">
+      <strong>Tue/Wed/Thu partner's only task:</strong> heat child's pre-portioned dinner (5:30pm). ChefMaker: place food in tray, press button — 10–14 min, no preheat, no monitoring. Pasta meals: boil penne 10 min, add pre-made sauce from fridge container. That's it.
+    </div>
+  </div>
+
+  <!-- ═══════ TAB 3: RECIPES ═══════ -->
+  <div id="recipes" class="panel">
+    <div class="callout callout-navy">
+      <strong>Tap any recipe to expand.</strong> Timings and temperatures are verified against multiple UK recipe sources. All recipes scaled for 3 adults (2M, 1F). Child portions noted where relevant.
+    </div>
+
+    <div class="section-divider">☀️ SUNDAY BATCH COOK (~90 min total, 20 min active)</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Batch Roast Chicken Thighs (2 kg) — DREO ChefMaker <span class="meta">⏱ 40 min total (2 batches) • 10 min prep</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients (Week A: Garlic & Lemon)</h4>
+      <ul><li>2 kg skinless boneless chicken thigh fillets</li><li>3 tbsp olive oil</li><li>4 garlic cloves, crushed</li><li>Juice of 1 lemon + zest</li><li>1 tsp salt, ½ tsp black pepper</li><li>1 tsp dried oregano or mixed herbs</li></ul>
+      <h4>Week B Variant: Smoked Paprika</h4>
+      <ul><li>Same chicken. Replace lemon/garlic with: 2 tbsp smoked paprika, 1 tsp cumin, 3 tbsp olive oil, 1 tsp salt.</li></ul>
+      <h4>DREO ChefMaker Method</h4>
+      <ol><li>Toss chicken with oil and seasoning in a bowl. No need to preheat.</li><li>Fill the DREO water tank to the MAX line (this enables steam injection for juicier results).</li><li>Place ~1 kg of thighs in the cooking tray in a single layer (half the batch — 6-quart capacity means 2 batches).</li><li>Insert the cook probe into the thickest thigh.</li><li>Select <strong>Chef Mode → Poultry → Chicken Thigh</strong>. The machine sets its own temperature staging and steam levels.</li><li>Press start. Cook until probe signals done — typically <strong>18–22 minutes</strong>. The steam + convection gives a crispy exterior with juicy interior.</li><li>Remove batch 1 to a plate. Repeat with batch 2.</li><li>Rest 5 minutes. Slice or shred. Portion into 6 adult containers + reserve for lunches.</li></ol>
+      <h4>Oven Fallback (if ChefMaker is occupied)</h4>
+      <ol><li>Preheat oven to <strong>200°C / 180°C fan / Gas 6</strong>. Spread in single layer in roasting tin.</li><li>Roast <strong>35–40 minutes</strong> until golden and internal temp reaches 75°C.</li></ol>
+      <div class="tip">💡 Run the rice on the hob and eggs in a pan simultaneously. The slow cooker Bolognese should already be on from 9am. All four elements run in parallel — 15 minutes of active work produces the entire week's food.</div>
+      <div class="macro-line">Per 150g portion: ~263 kcal • P: 40g • F: 11g • C: 0g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Brown Rice (large batch, 300g dry) <span class="meta">⏱ 25 min • passive</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients</h4>
+      <ul><li>300g brown basmati rice</li><li>600ml water</li><li>Pinch of salt</li></ul>
+      <h4>Method</h4>
+      <ol><li>Rinse rice in cold water until water runs clear (removes excess starch).</li><li>Add rice, water and salt to a medium saucepan. Bring to boil.</li><li>Reduce to lowest heat, cover with tight-fitting lid. Cook <strong>25 minutes</strong> — do not lift the lid.</li><li>Remove from heat, keep lid on, rest <strong>5 minutes</strong>.</li><li>Fluff with fork. Cool completely before refrigerating (important for food safety).</li></ol>
+      <div class="tip">💡 For egg fried rice (Week B Monday): use this leftover rice cold from the fridge. Cold rice fries better — less sticky.</div>
+      <div class="macro-line">Per 100g cooked: ~141 kcal • P: 3g • F: 1g • C: 32g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Hard-Boiled Eggs (6) <span class="meta">⏱ 12 min • passive</span></div>
+    <div class="recipe-body">
+      <h4>Method</h4>
+      <ol><li>Place 6 eggs in a single layer in a saucepan. Cover with cold water by 2cm.</li><li>Bring to a rolling boil over high heat.</li><li>Once boiling, reduce heat slightly and boil for exactly <strong>10 minutes</strong>.</li><li>Transfer immediately to a bowl of cold water (or ice water). Cool for 5 minutes.</li><li>Peel or store unpeeled in fridge — they keep <strong>5 days</strong> in shell.</li></ol>
+      <div class="tip">💡 The cold water plunge stops cooking and makes peeling much easier. Older eggs peel better than fresh ones.</div>
+      <div class="macro-line">Per egg: ~78 kcal • P: 6g • F: 5g • C: 0.6g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Turkey Mince Bolognese — Slow Cooker (Week A) <span class="meta">⏱ 8 min active • 5–6 hrs slow cook</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients</h4>
+      <ul><li>1 kg turkey mince (2 × 500g packs)</li><li>1 tbsp olive oil</li><li>1 large onion, finely diced</li><li>3 garlic cloves, crushed</li><li>2 × 400g tins chopped tomatoes</li><li>2 tbsp tomato purée</li><li>1 tsp dried oregano, 1 tsp dried basil</li><li>Salt and pepper to taste</li><li>1 bay leaf (optional)</li></ul>
+      <h4>Slow Cooker Method</h4>
+      <ol><li>Heat oil in a large frying pan over medium-high heat.</li><li>Add onion, cook <strong>3 minutes</strong>. Add turkey mince, break up with wooden spoon, cook <strong>5 minutes</strong> until browned. Add garlic, stir 30 seconds.</li><li>Transfer everything to the <strong>slow cooker</strong>. Add tinned tomatoes, tomato purée, herbs, bay leaf. Stir well.</li><li>Set to <strong>LOW</strong>. Cook for <strong>5–6 hours</strong> (or HIGH for 3–4 hours).</li><li>Season to taste. Remove bay leaf.</li><li>Portion: 3 adult containers for Tue/Wed/Thu dinners + 2–3 child containers (smaller portions).</li></ol>
+      <h4>Why slow cooker instead of stovetop?</h4>
+      <ul><li>8 minutes active time vs 30 minutes stovetop — set it at 9am after the anchor session, it's done by 3pm.</li><li>Deeper flavour — the long, slow simmer breaks down the tomatoes and melds the herbs better than a quick stovetop cook.</li><li>Zero monitoring — no stirring, no burning risk. You're doing family time while it cooks.</li></ul>
+      <div class="tip">💡 Week B variant — Turkey Chilli: add 1 tsp cumin, 1 tsp chilli powder (mild), 1 drained tin kidney beans at step 3. Same slow cooker method. For the child: portion out before adding chilli flakes.</div>
+      <div class="macro-line">Per adult portion (~250g): ~280 kcal • P: 35g • F: 9g • C: 12g</div>
+    </div></div>
+
+    <div class="section-divider">🌙 MONDAY EVENING PREP (~25 min)</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Overnight Oats Jars × 3 <span class="meta">⏱ 8 min total</span></div>
+    <div class="recipe-body">
+      <h4>Per Jar</h4>
+      <ul><li>80g rolled oats (Essential Porridge Oats)</li><li>200ml skimmed milk</li><li>1 scoop (25g) whey protein powder</li><li>1 tbsp chia seeds</li><li>Topping: handful blueberries (Week A) or sliced banana (Week B)</li></ul>
+      <h4>Method</h4>
+      <ol><li>Add oats, milk, whey and chia seeds to a 500ml jar. Stir or shake with lid on.</li><li>Add fruit topping on top (don't stir in — keeps texture).</li><li>Seal lid. Refrigerate. Ready in <strong>4+ hours</strong> (overnight is ideal).</li><li>Eat cold straight from jar on the train. No heating needed.</li></ol>
+      <div class="tip">💡 Build all 3 jars in one go — line them up, assembly-line style. Total: 8 minutes for 3 jars.</div>
+      <div class="macro-line">Per jar: ~420 kcal • P: 38g • F: 8g • C: 48g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Salad Prep & Snack Bags (Tue/Wed/Thu) <span class="meta">⏱ 12 min</span></div>
+    <div class="recipe-body">
+      <h4>Per Lunch Box (make 3)</h4>
+      <ul><li>Handful mixed salad leaves</li><li>6–8 cherry tomatoes, halved</li><li>¼ cucumber, sliced</li><li>½ avocado (slice on the day to avoid browning, or add lemon juice)</li><li>2 hard-boiled eggs (from Sunday batch)</li><li>Portion of batch chicken OR flaked sardines in tomato sauce</li></ul>
+      <h4>Per Snack Bag (make 3)</h4>
+      <ul><li>30g mixed nuts in a small bag/container</li><li>1 apple or banana (whole, in bag)</li><li>150g Greek yoghurt pot (or pre-portioned into small container + 1 tsp honey)</li></ul>
+      <h4>Method</h4>
+      <ol><li>Line up 3 lunch containers. Divide salad leaves, tomatoes, cucumber evenly.</li><li>Add protein (chicken or herring) to each. Eggs alongside or on top.</li><li>Seal and refrigerate. Dressing (olive oil + lemon) in a small separate pot if wanted.</li><li>Portion nuts into 3 small bags. Put apple/banana alongside. Done.</li></ol>
+    </div></div>
+
+    <div class="section-divider">🍳 FRIDAY DINNER (Roderick cooks, 30–40 min)</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Salmon + Broccoli + Sweet Potato — DREO ChefMaker (Week A Fri) <span class="meta">⏱ 25 min total</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients (3 adults)</h4>
+      <ul><li>4 salmon fillets (use 3 for adults, keep 1 for Saturday lunch)</li><li>2 heads broccoli, cut into florets</li><li>2–3 medium sweet potatoes, cubed (2cm pieces)</li><li>3 tbsp olive oil</li><li>Salt, pepper, 1 tsp garlic powder</li><li>Lemon wedges to serve</li></ul>
+      <h4>DREO ChefMaker Method — Two Stages</h4>
+      <ol><li><strong>Stage 1 — Veg:</strong> Toss sweet potato cubes and broccoli florets in 2 tbsp oil, salt, pepper, garlic powder.</li><li>Place in ChefMaker cooking tray. Select <strong>Classic Mode → Air Fry → 190°C → 15 minutes</strong>.</li><li>Shake basket halfway through. Remove when golden and tender. Set aside (cover with foil to keep warm).</li><li><strong>Stage 2 — Salmon:</strong> Fill the DREO water tank. Place salmon fillets in the tray, skin side down. Season with salt, pepper, drizzle of oil.</li><li>Insert cook probe into the thickest fillet.</li><li>Select <strong>Chef Mode → Seafood → Salmon</strong>. The machine manages temperature and steam automatically.</li><li>Cook until probe signals done — typically <strong>10–12 minutes</strong>. The steam keeps the salmon incredibly moist while the convection gives a light crust on top.</li><li>Serve salmon on the veg. Squeeze lemon over everything.</li></ol>
+      <div class="tip">💡 Total hands-on time: 5 minutes (cutting veg + seasoning). The ChefMaker does the rest. No oven preheat, no temperature watching. The probe means perfect salmon every single time — no more guessing if it's done.</div>
+      <div class="macro-line">Per adult serving: ~520 kcal • P: 38g • F: 22g • C: 40g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Salmon en Papillote — Oven only, not ChefMaker (Week B Fri) <span class="meta">⏱ 25 min</span></div>
+    <div class="recipe-body">
+      <h4>Why oven, not ChefMaker?</h4>
+      <ul><li>The parchment parcel technique relies on trapped steam inside a sealed packet. The ChefMaker's convection fan would blow the parchment open, defeating the purpose. This one stays in the oven.</li></ul>
+      <h4>Ingredients (3 adults)</h4>
+      <ul><li>3–4 salmon fillets</li><li>1 lemon, thinly sliced</li><li>Fresh dill or thyme (a few sprigs per fillet, or 1 tsp dried herbs)</li><li>1 tbsp butter or olive oil per fillet</li><li>Salt and pepper</li><li>3 large squares of baking parchment (~30×40cm each)</li></ul>
+      <h4>Method</h4>
+      <ol><li>Preheat oven to <strong>200°C / 180°C fan / Gas 6</strong>.</li><li>Place each salmon fillet in the centre of a parchment square.</li><li>Season with salt and pepper. Add a knob of butter, lemon slices, and herbs on top.</li><li>Fold parchment over the salmon. Crimp and fold edges tightly to seal — the packet should be airtight.</li><li>Place packets on a baking tray. Bake <strong>15–18 minutes</strong>.</li><li>The packet will puff up when ready. Serve on plates — open at the table. Be careful of hot steam.</li></ol>
+      <div class="tip">💡 Sides: air fry the sweet potato and broccoli in the ChefMaker (Classic → Air Fry, 190°C, 15 min) while the oven preheats and salmon bakes. Both appliances running in parallel = dinner in 25 minutes.</div>
+      <div class="macro-line">Per fillet: ~350 kcal • P: 34g • F: 22g • C: 1g (plus sides)</div>
+    </div></div>
+
+    <div class="section-divider">🍲 SATURDAY DINNER</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Chicken Thighs — Lemon Herb — DREO ChefMaker (Week A Sat) <span class="meta">⏱ 25 min</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients (3 adults + child portion)</h4>
+      <ul><li>6–8 chicken thigh fillets (from second 1kg pack, or leftover from Sunday)</li><li>2 tbsp olive oil</li><li>Juice and zest of 1 lemon</li><li>2 garlic cloves, crushed</li><li>1 tsp dried thyme or rosemary</li><li>Salt and pepper</li><li>Green beans (2 bags, trimmed) and brown rice to serve</li></ul>
+      <h4>DREO ChefMaker Method</h4>
+      <ol><li>Mix oil, lemon juice, zest, garlic, herbs in a bowl. Toss chicken to coat.</li><li>Fill the DREO water tank. Place chicken in cooking tray, single layer.</li><li>Insert cook probe into the thickest thigh.</li><li>Select <strong>Chef Mode → Poultry → Chicken Thigh</strong>. Press start.</li><li>Cook until probe signals done — typically <strong>18–22 minutes</strong>.</li><li>Meanwhile: boil green beans on the hob for <strong>4–5 minutes</strong>. Reheat batch rice in ChefMaker after chicken is done (Classic → Reheat, 160°C, 5 min) or microwave.</li><li>Serve. Child gets a smaller portion with peas instead of green beans if preferred.</li></ol>
+      <div class="tip">💡 If making fresh rather than using Sunday batch leftovers, this is the exact same ChefMaker method as Sunday — just with different seasoning. The probe eliminates all guesswork.</div>
+      <div class="macro-line">Per adult serving (2 thighs + rice + beans): ~480 kcal • P: 45g • F: 15g • C: 35g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Slow Cooker Red Lentil Dhal (Week B Saturday) <span class="meta">⏱ 10 min prep • 5–6 hrs slow cook</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients (3 adults + child portion)</h4>
+      <ul><li>300g red lentils, rinsed</li><li>1 × 400g tin chopped tomatoes</li><li>1 × 400ml tin coconut milk (full fat)</li><li>500ml vegetable stock (1 stock cube + water)</li><li>1 large onion, diced</li><li>3 garlic cloves, crushed</li><li>1 tbsp fresh ginger, grated (or 1 tsp dried)</li><li>2 tsp ground cumin</li><li>1 tsp ground turmeric</li><li>1 tsp ground coriander</li><li>½ tsp chilli flakes (leave out for child-mild version)</li><li>Salt to taste</li><li>Fresh coriander to serve (optional)</li></ul>
+      <h4>Method</h4>
+      <ol><li>Rinse red lentils under cold water until water runs clear.</li><li>Add all ingredients <strong>except coconut milk</strong> to the slow cooker. Stir well.</li><li>Cook on <strong>LOW for 5–6 hours</strong> or <strong>HIGH for 3–4 hours</strong>. Lentils should be completely soft and broken down.</li><li>Add coconut milk in the <strong>last 30 minutes</strong> of cooking. Stir through.</li><li>Season with salt. The dhal should be thick and creamy — add a splash of water if too thick.</li><li>Serve over brown rice with fresh coriander on top if you have it.</li></ol>
+      <div class="tip">💡 Set the slow cooker at lunchtime on Saturday (~12pm). It's ready by 6pm with zero effort. The child version: portion out before adding chilli flakes. Leftovers freeze brilliantly — portion into containers for easy future meals.</div>
+      <div class="macro-line">Per adult serving (~350g): ~380 kcal • P: 18g • F: 14g • C: 42g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Egg Fried Rice (Week B Monday) <span class="meta">⏱ 15 min</span></div>
+    <div class="recipe-body">
+      <h4>Ingredients (3 adults + child portion)</h4>
+      <ul><li>Leftover cold brown rice from Sunday batch (~500g cooked)</li><li>6–9 eggs (2–3 per adult)</li><li>200g frozen peas</li><li>2 tbsp soy sauce</li><li>1 tbsp sesame oil (or olive oil)</li><li>1 tsp fresh ginger, grated (optional)</li><li>2 spring onions, sliced (optional)</li></ul>
+      <h4>Method</h4>
+      <ol><li>Heat oil in a large wok or frying pan over <strong>high heat</strong>.</li><li>Crack eggs directly into pan. Scramble roughly for <strong>1–2 minutes</strong> until just set. Remove to a plate.</li><li>Add a splash more oil. Add cold rice to the hot pan. Stir-fry for <strong>3–4 minutes</strong> until rice is hot and starting to crisp.</li><li>Add frozen peas directly (they'll defrost in 2 minutes from the heat).</li><li>Return eggs to pan. Add soy sauce and ginger. Toss everything together for <strong>1–2 minutes</strong>.</li><li>Serve immediately. Top with spring onions if using.</li></ol>
+      <div class="tip">💡 The key: cold rice + very hot pan = proper fried rice. Freshly cooked rice goes mushy. This is why Sunday's batch rice is perfect here.</div>
+      <div class="macro-line">Per adult serving: ~420 kcal • P: 22g • F: 15g • C: 45g</div>
+    </div></div>
+
+    <div class="section-divider">👶 CHILD QUICK MEALS (Partner heats, 10–15 min max)</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Bolognese over Penne + Cheddar <span class="meta">⏱ 12 min</span></div>
+    <div class="recipe-body">
+      <ol><li>Boil kettle. Cook penne pasta in salted boiling water — <strong>10–12 minutes</strong> per pack instructions.</li><li>Reheat a pre-portioned container of turkey Bolognese/chilli sauce in the microwave — <strong>2–3 minutes</strong>, stir halfway.</li><li>Drain pasta. Top with sauce. Grate cheddar over the top.</li></ol>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Sausages + Peas + Mash — DREO ChefMaker <span class="meta">⏱ 15 min (no preheat)</span></div>
+    <div class="recipe-body">
+      <h4>DREO ChefMaker Method</h4>
+      <ol><li>Place sausages in ChefMaker tray. Select <strong>Classic Mode → Air Fry → 190°C → 14 minutes</strong>. No preheat needed — press start immediately.</li><li>Turn sausages halfway through (at 7 min) for even browning.</li><li>While sausages cook: peel and chop 1–2 potatoes. Boil in salted water <strong>15 minutes</strong> until tender. Drain, mash with a knob of butter and splash of milk.</li><li>Boil frozen peas for <strong>3 minutes</strong>. Drain. Serve alongside.</li></ol>
+      <div class="tip">💡 For the partner: this is genuinely a "put sausages in, press button, boil potatoes" job. No oven preheat saves 10 minutes vs the old method. Total hands-on time: 5 minutes.</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Fish Fingers + Peas — DREO ChefMaker <span class="meta">⏱ 12 min (no preheat)</span></div>
+    <div class="recipe-body">
+      <h4>DREO ChefMaker Method</h4>
+      <ol><li>Place fish fingers in ChefMaker tray in a single layer. Select <strong>Classic Mode → Air Fry → 200°C → 10 minutes</strong>.</li><li>No preheat needed. No turning needed — the convection cooks evenly.</li><li>Boil frozen peas for <strong>3 minutes</strong> while fish fingers cook. Serve with ketchup.</li></ol>
+      <div class="tip">💡 Crispier than oven-baked, 8 minutes faster (no preheat). Add sweet potato wedges alongside if wanted: toss in oil, add to tray with fish fingers, add 5 min extra (Classic → Air Fry → 190°C → 15 min total).</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Mac & Cheese (from box) <span class="meta">⏱ 12 min</span></div>
+    <div class="recipe-body">
+      <ol><li>Follow pack instructions. Typically: boil pasta <strong>8–10 minutes</strong>.</li><li>Drain. Stir in the cheese sauce packet with a splash of milk and a knob of butter.</li><li>Optionally stir in frozen peas (add to pasta water in last 2 minutes of cooking).</li></ol>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Bacon Penne + Cheddar <span class="meta">⏱ 14 min</span></div>
+    <div class="recipe-body">
+      <ol><li>Cook penne pasta — <strong>10–12 minutes</strong>.</li><li>While pasta cooks: chop 2–3 bacon rashers into small pieces. Fry in a dry pan over medium heat <strong>4–5 minutes</strong> until crispy.</li><li>Drain pasta, reserving 2 tbsp pasta water. Toss pasta with bacon, pasta water, and a generous handful of grated cheddar. Stir until cheese melts into a simple sauce.</li></ol>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Beans on Toast / Instant Noodles <span class="meta">⏱ 5 min</span></div>
+    <div class="recipe-body">
+      <h4>Beans on Toast</h4>
+      <ol><li>Toast 1–2 slices of bread. Heat beans in a saucepan for <strong>3–4 minutes</strong> (or microwave 2 minutes, stir, 1 minute more).</li><li>Pour beans over toast. Add grated cheddar if wanted. Serve with fruit alongside.</li></ol>
+      <h4>Instant Noodles (emergency option)</h4>
+      <ol><li>Boil kettle. Cook noodles per pack instructions (typically <strong>4 minutes</strong>).</li><li>Add a handful of frozen peas in the last minute. Drain most of the water.</li><li>Stir in the flavouring sachet. Serve.</li></ol>
+      <div class="tip">💡 These are the 5:45pm "nobody planned anything" options. No guilt. Add fruit (apple, grapes, banana) on the side and it's a fine child dinner.</div>
+    </div></div>
+
+    <div class="section-divider">🍳 BREAKFAST METHODS</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Poached Eggs (for Babs) <span class="meta">⏱ 6 min</span></div>
+    <div class="recipe-body">
+      <ol><li>Fill a medium saucepan with water ~8cm deep. Bring to a <strong>gentle simmer</strong> — small bubbles, not a rolling boil.</li><li>Add <strong>1 tbsp white vinegar</strong> (helps the white hold together). Optional but recommended.</li><li>Crack each egg into a small cup or ramekin first.</li><li>Create a gentle swirl in the water with a spoon. Slide the egg in from the cup.</li><li>Cook for <strong>3 minutes</strong> for a runny yolk, <strong>4 minutes</strong> for medium.</li><li>Remove with a slotted spoon. Rest briefly on kitchen paper to drain. Season and serve.</li></ol>
+      <div class="tip">💡 Fresh eggs poach better (the white is tighter). For 2 eggs: do them one at a time, 30 seconds apart, in the same pan.</div>
+      <div class="macro-line">Per egg: ~78 kcal • P: 6g • F: 5g • C: 0.6g</div>
+    </div></div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Bialetti Moka Pot — 05:00 Coffee Routine <span class="meta">⏱ 6 min (prep night before)</span></div>
+    <div class="recipe-body">
+      <h4>Night Before (1 minute)</h4>
+      <ol><li>Fill the Bialetti base with cold water to just below the safety valve.</li><li>Fill the filter basket with ground coffee (Essential Italian Style or any medium-fine grind). Level off — don't tamp or press down.</li><li>Place the basket in the base. Leave the top unscrewed on the counter beside the stove.</li></ol>
+      <h4>05:00 Morning (5 minutes, hands-free)</h4>
+      <ol><li>Screw the top on firmly (hand-tight, no tools).</li><li>Place on hob over <strong>medium heat</strong>. Leave the lid up so you can see when coffee starts flowing.</li><li>Wait ~4–5 minutes. Coffee will start gurgling up into the top chamber.</li><li>When the flow turns from dark to pale honey colour and you hear a hissing/spluttering sound — <strong>remove from heat immediately</strong>. Don't let it boil.</li><li>Pour. Black, no milk. Ready before the 05:15 training session.</li></ol>
+      <div class="tip">💡 The gurgle is your alarm clock. Prep the night before and the entire routine is: walk to kitchen, screw top on, turn on gas, get dressed, pour coffee, train. Caffeine cut-off: 13:00 — the Bialetti is a morning-only tool. One 3-cup pot = ~130–150mg caffeine (strong double espresso equivalent).</div>
+    </div></div>
+
+    <div class="section-divider">♻️ REHEATING — DREO ChefMaker vs Microwave</div>
+
+    <div class="recipe"><div class="recipe-header" onclick="toggleRecipe(this)">Reheating Batch Meals (Tue/Wed/Thu Dinners) — DREO ChefMaker <span class="meta">⏱ 6–8 min</span></div>
+    <div class="recipe-body">
+      <h4>Why ChefMaker instead of microwave?</h4>
+      <ul><li>Microwaved batch chicken goes rubbery and uneven. The ChefMaker's convection reheats evenly and restores crispiness to the chicken surface.</li><li>Takes 3 minutes longer than microwave but the difference between "sad leftovers" and "proper dinner" is this step.</li></ul>
+      <h4>DREO ChefMaker Method</h4>
+      <ol><li>Take pre-portioned container from fridge. Transfer chicken + rice + veg to ChefMaker tray. Spread evenly — don't pile.</li><li>Select <strong>Classic Mode → Reheat → 160°C → 6–8 minutes</strong>.</li><li>No need to cover or add water. The convection reheats and re-crisps simultaneously.</li><li>Check food is piping hot throughout before serving.</li></ol>
+      <div class="tip">💡 For the partner reheating child's dinner at 5:30pm: use the same ChefMaker method for pre-portioned child Bolognese. Or microwave is fine for the child's pasta-based meals — the sauce protects the texture. ChefMaker is most valuable for protein + rice + veg combinations.</div>
+    </div></div>
+
+  </div>
+
+  <!-- ═══════ TAB 4: KIT LIST ═══════ -->
+  <div id="kit" class="panel">
+    <div class="card">
+      <h2>🫙 Prep Containers & Storage</h2>
+      <div class="kit-item">
+        <div class="kit-icon">🫙</div>
+        <div class="kit-info">
+          <h4>Wide-Mouth Glass Jars × 4</h4>
+          <p>For overnight oats. 500ml Kilner clip-top or Ball mason jars. Glass prevents staining. Need 3 in rotation + 1 spare.</p>
+          <a href="https://www.amazon.co.uk/s?k=kilner+clip+top+jar+500ml" target="_blank">Search on Amazon →</a> •
+          <a href="https://www.waitrose.com/ecom/shop/browse/groceries/home" target="_blank">Also at Waitrose Home →</a>
+        </div>
+        <div class="kit-price">~£8</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">📦</div>
+        <div class="kit-info">
+          <h4>Sistema Klip It Medium Containers × 9</h4>
+          <p>900ml–1L, rectangular, stackable, microwave-safe, leak-proof. 6 adult dinner portions + 3 lunch boxes. Sistema specifically — supermarket own-brand clips fail.</p>
+          <a href="https://www.amazon.co.uk/s?k=sistema+klip+it+rectangular+1L" target="_blank">Search on Amazon →</a> •
+          <a href="https://www.lakeland.co.uk/brands/sistema/" target="_blank">Also at Lakeland →</a>
+        </div>
+        <div class="kit-price">~£27</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">🍱</div>
+        <div class="kit-info">
+          <h4>Sistema Klip It Small Containers × 4</h4>
+          <p>400–500ml for child pre-portioned dinners (Tue/Wed/Thu) + 1 spare. Same brand for stacking consistency.</p>
+          <a href="https://www.amazon.co.uk/s?k=sistema+klip+it+small+400ml" target="_blank">Search on Amazon →</a>
+        </div>
+        <div class="kit-price">~£12</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">📦</div>
+        <div class="kit-info">
+          <h4>Large Storage Containers × 3</h4>
+          <p>1.5–2L for storing bulk batch (the big chicken tray, the Bolognese pot, the rice). Lid must seal properly.</p>
+          <a href="https://www.amazon.co.uk/s?k=sistema+klip+it+2+litre" target="_blank">Search on Amazon →</a>
+        </div>
+        <div class="kit-price">~£15</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎒 London Commute Kit</h2>
+      <div class="kit-item">
+        <div class="kit-icon">🥗</div>
+        <div class="kit-info">
+          <h4>Leak-Proof Salad Container × 1</h4>
+          <p>Compartmented — wet (dressing, tomatoes) and dry (leaves, eggs) stay separate. OXO Good Grips or Bentgo Salad.</p>
+          <a href="https://www.amazon.co.uk/s?k=OXO+Good+Grips+salad+container" target="_blank">OXO on Amazon →</a> •
+          <a href="https://www.amazon.co.uk/s?k=Bentgo+salad+container" target="_blank">Bentgo on Amazon →</a>
+        </div>
+        <div class="kit-price">~£15</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">🥜</div>
+        <div class="kit-info">
+          <h4>Small Snack Containers or Reusable Bags × 6</h4>
+          <p>For nuts, fruit portions. Stasher silicone bags or small 200ml clip-lock pots. Need 3 per London day × 2 in rotation.</p>
+          <a href="https://www.amazon.co.uk/s?k=stasher+reusable+snack+bag" target="_blank">Stasher bags on Amazon →</a>
+        </div>
+        <div class="kit-price">~£8</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🍳 Cooking Equipment — Already Owned</h2>
+      <div class="kit-item">
+        <div class="kit-icon">🔥</div>
+        <div class="kit-info">
+          <h4>DREO ChefMaker Combi Fryer ✅ You have this</h4>
+          <p>Primary cooking appliance for chicken thighs (Chef Mode → Poultry), salmon (Chef Mode → Seafood), air frying veg, child meals (sausages, fish fingers), and reheating batch dinners. No preheat needed. Probe eliminates guesswork.</p>
+        </div>
+        <div class="kit-price">Owned</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">🍲</div>
+        <div class="kit-info">
+          <h4>Slow Cooker ✅ You have this</h4>
+          <p>Used for Sunday Bolognese (brown 8 min, then LOW 5–6 hours) and Saturday Week B dhal. Set and forget — cooks while you do family time.</p>
+        </div>
+        <div class="kit-price">Owned</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">☕</div>
+        <div class="kit-info">
+          <h4>Bialetti Moka Pot ✅ You have this</h4>
+          <p>05:00 coffee. Prep night before, screw on and heat in the morning. 5 minutes to a strong espresso-style coffee before training. See Recipes tab for the routine.</p>
+        </div>
+        <div class="kit-price">Owned</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">🔥</div>
+        <div class="kit-info">
+          <h4>Large Deep Roasting Tin × 1 (backup only)</h4>
+          <p>Still useful for salmon en papillote (Week B Friday — parchment parcels can't go in the ChefMaker) and oven fallback when ChefMaker is doing two batches. If you already have one, you're set.</p>
+          <a href="https://www.amazon.co.uk/s?k=large+deep+roasting+tin+non+stick" target="_blank">Search on Amazon →</a>
+        </div>
+        <div class="kit-price">~£10</div>
+      </div>
+      <div class="kit-item">
+        <div class="kit-icon">🏷️</div>
+        <div class="kit-info">
+          <h4>Masking Tape + Permanent Marker</h4>
+          <p>Label containers with contents + date. Sounds trivial but prevents the "what is this?" problem by Wednesday. Dry-erase labels also work on glass.</p>
+          <a href="https://www.amazon.co.uk/s?k=dry+erase+labels+kitchen" target="_blank">Dry-erase labels on Amazon →</a>
+        </div>
+        <div class="kit-price">~£3</div>
+      </div>
+    </div>
+
+    <div class="callout callout-green">
+      <strong>Total one-time kit investment: ~£83</strong> (containers + commute kit only — cooking equipment already owned).<br>
+      All items last years with proper care. Buy 2–3 extra medium containers (~£9) so there's always a clean one available — the system breaks when you're hand-washing at 6am.<br>
+      <strong>Equipment you already have:</strong> DREO ChefMaker, slow cooker, Bialetti, pots & pans — no additional cooking equipment needed.
+    </div>
+  </div>
+  <!-- ═══════ TAB 5: ORDER HELPER ═══════ -->
+  <div id="order" class="panel">
+
+    <div class="callout callout-navy">
+      <strong>How this works:</strong> Each item links directly to Waitrose search. Click the link → find the product → click "Add to Favourites" (heart icon) or "Add to Trolley." Tick the checkbox when done. Progress bar tracks your list. <strong>Do this once</strong> — after that, reorder from Favourites weekly in 3 minutes.
+    </div>
+
+    <div class="card">
+      <h2>🛒 Weekly Fresh List <span id="fresh-count" style="font-weight:400;font-size:0.75em;color:var(--muted);"></span></h2>
+      <div class="progress-bar"><div id="fresh-bar" class="progress-fill" style="width:0%"></div></div>
+      <div id="fresh-list">
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+chicken+thigh+fillets" target="_blank">Essential Chicken Thigh Fillets (skinless boneless)</a><span class="qty">× 2 packs (1kg each)</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=scottish+salmon+fillets+4" target="_blank">Waitrose 4 Scottish Salmon Fillets</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=hot+smoked+herring" target="_blank">Hot Smoked Herring Fillets</a><span class="qty">× 3 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+free+range+eggs" target="_blank">Essential Free Range Eggs (6-pack)</a><span class="qty">× 5 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+fat+free+greek+yogurt" target="_blank">Essential Fat Free Greek Style Yogurt 500g</a><span class="qty">× 4</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+turkey+thigh+mince" target="_blank">Essential Turkey Thigh Mince 500g</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+cottage+cheese" target="_blank">Essential Cottage Cheese 300g</a><span class="qty">× 1</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+mixed+salad+leaves" target="_blank">Essential Mixed Salad Leaves</a><span class="qty">× 3 bags</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+cherry+tomatoes" target="_blank">Essential Cherry Tomatoes</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+cucumber" target="_blank">Essential Cucumber</a><span class="qty">× 2</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+broccoli" target="_blank">Essential Broccoli</a><span class="qty">× 2 heads</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+fine+green+beans" target="_blank">Essential Fine Green Beans</a><span class="qty">× 2 bags</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+avocado" target="_blank">Essential Perfectly Ripe Avocados</a><span class="qty">× 4</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+bananas" target="_blank">Essential Bananas</a><span class="qty">× 2 bunches</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+apples" target="_blank">Essential Apples (6-pack)</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+blueberries" target="_blank">Essential Blueberries</a><span class="qty">× 2 punnets</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+skimmed+milk" target="_blank">Essential Skimmed Milk (2 pint)</a><span class="qty">× 3 cartons</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+wholemeal+bread" target="_blank">Essential Wholemeal Bread 800g</a><span class="qty">× 1 loaf</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+pork+sausages" target="_blank">Essential Pork Sausages 454g</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+smoked+back+bacon" target="_blank">Essential Smoked Back Bacon 250g</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+seedless+grapes" target="_blank">Essential Seedless Grapes</a><span class="qty">× 2 bags</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=pineapple" target="_blank">Fresh Pineapple</a><span class="qty">× 1</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📦 Stock Cupboard List <span id="stock-count" style="font-weight:400;font-size:0.75em;color:var(--muted);"></span></h2>
+      <div class="progress-bar"><div id="stock-bar" class="progress-fill" style="width:0%"></div></div>
+      <div id="stock-list">
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+sardines+tomato+sauce" target="_blank">Essential Sardines in Tomato Sauce</a><span class="qty">× 4 tins</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+chopped+tomatoes" target="_blank">Essential Chopped Tomatoes 400g</a><span class="qty">× 4 tins</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+coconut+milk" target="_blank">Essential Coconut Milk 400ml</a><span class="qty">× 2 tins</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+baked+beans" target="_blank">Essential Baked Beans (4-pack)</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+tomato+puree" target="_blank">Essential Tomato Purée 200g</a><span class="qty">× 1 tube</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+porridge+oats+1kg" target="_blank">Essential Porridge Oats 1kg</a><span class="qty">× 2 bags</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+brown+basmati+rice" target="_blank">Essential Brown Basmati Rice 500g</a><span class="qty">× 1 bag</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+red+lentils" target="_blank">Essential Red Lentils 500g</a><span class="qty">× 1 bag</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+penne+pasta" target="_blank">Essential Penne Pasta 500g</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=waitrose+chia+seeds" target="_blank">Waitrose Chia Seeds 200g</a><span class="qty">× 1 bag</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+vegetable+stock+cubes" target="_blank">Essential Vegetable Stock Cubes</a><span class="qty">× 1 box</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+dark+soy+sauce" target="_blank">Essential Dark Soy Sauce</a><span class="qty">× 1 bottle</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+chicken+noodles" target="_blank">Essential Instant Noodles (4-pack)</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+macaroni+cheese" target="_blank">Essential Mac & Cheese</a><span class="qty">× 1 box</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+italian+ground+coffee" target="_blank">Essential Italian Style Ground Coffee 227g</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=waitrose+mixed+nuts" target="_blank">Waitrose Mixed Nuts 400g</a><span class="qty">× 2 bags</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=meridian+almond+butter" target="_blank">Meridian Smooth Almond Butter 470g</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=kallo+rice+cakes+plain" target="_blank">Kallo Plain Rice Cakes</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=lindt+85+dark+chocolate" target="_blank">Lindt Excellence 85% Dark Chocolate 100g</a><span class="qty">× 2 bars</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+olive+oil" target="_blank">Essential Olive Oil 500ml</a><span class="qty">× 1 bottle</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+clear+honey" target="_blank">Essential Clear Honey</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+sparkling+water+cans" target="_blank">Essential Sparkling Water (8-pack cans)</a><span class="qty">× 2 packs</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+sweet+potatoes" target="_blank">Essential Sweet Potatoes</a><span class="qty">× ~800g</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+mature+cheddar" target="_blank">Essential Mature Cheddar 400g</a><span class="qty">× 1 block</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+garden+peas+frozen" target="_blank">Essential Garden Peas 900g (frozen)</a><span class="qty">× 1 bag</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+fish+fingers" target="_blank">Essential Fish Fingers 10-pack (frozen)</a><span class="qty">× 1 box</span></div></div>
+      </div>
+    </div>
+
+    <div class="callout callout-green">
+      <strong>After you've done this once:</strong> Go to your Waitrose account → Favourites. All your items are saved. Each week: click "Add all to trolley" on the Weekly Fresh list, adjust quantities, checkout. The stock cupboard list gets added every second week. Total reorder time: 3–5 minutes.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>Household Meal Plan v6</strong> • Built from BackInShape V2.1 ROC Trilogy Programme<br>
+  <span style="font-size:0.72em;line-height:1.8;">
+  v1: Initial 3-tab plan (ingredients, meals, kit) &nbsp;→&nbsp;
+  v2: +Recipes tab, egg prefs (poached/HB), courgette swap, mackerel in tomato sauce, lentil dhal, stock items, Sunday-first week &nbsp;→&nbsp;
+  v3: DREO ChefMaker integration, Bialetti coffee routine, slow cooker Bolognese, updated kit &nbsp;→&nbsp;
+  v4: Mackerel → herring/sardines (Waitrose suspension Apr 2026), split weekly fresh / stock cupboard lists &nbsp;→&nbsp;
+  v5: Order Helper tab with 48 clickable Waitrose search links + progress tracking &nbsp;→&nbsp;
+v6: Multi-Search copy buttons — one click copies formatted list for Waitrose Multi-Search paste. Copy All buttons per section. with 48 clickable Waitrose search links + progress tracking
+  </span>
+</footer>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+function showWeek(w) {
+  document.querySelectorAll('.week-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('week-' + w).classList.add('active');
+  event.target.classList.add('active');
+}
+function toggleRecipe(el) {
+  const body = el.nextElementSibling;
+  body.classList.toggle('open');
+}
+function updateProgress(list) {
+  const container = document.getElementById(list + '-list');
+  const checks = container.querySelectorAll('.order-check');
+  const total = checks.length;
+  let done = 0;
+  checks.forEach(function(cb) {
+    const link = cb.parentElement.querySelector('.order-link');
+    if (cb.checked) { done++; link.classList.add('order-done'); }
+    else { link.classList.remove('order-done'); }
+  });
+  const pct = Math.round((done / total) * 100);
+  document.getElementById(list + '-bar').style.width = pct + '%';
+  document.getElementById(list + '-count').textContent = '(' + done + '/' + total + ' added)';
+}
+
+var multiSearchLists = {
+  'fresh-protein': [
+    'Essential Chicken Thigh Fillets Skinless Boneless',
+    'Waitrose Scottish Salmon Fillets 4',
+    'Hot Smoked Herring Fillets',
+    'Essential Free Range Eggs 6',
+    'Essential Fat Free Greek Style Yogurt 500g',
+    'Essential Turkey Thigh Mince 500g',
+    'Essential Cottage Cheese 300g'
+  ],
+  'fresh-veg': [
+    'Essential Mixed Salad Leaves',
+    'Essential Cherry Tomatoes',
+    'Essential Cucumber',
+    'Essential Broccoli',
+    'Essential Fine Green Beans',
+    'Essential Avocado',
+    'Essential Bananas',
+    'Essential Apples 6 pack',
+    'Essential Blueberries',
+    'Essential Skimmed Milk 2 pint',
+    'Essential Wholemeal Bread 800g'
+  ],
+  'fresh-child': [
+    'Essential Pork Sausages 454g',
+    'Essential Smoked Back Bacon 250g',
+    'Essential Seedless Grapes',
+    'Pineapple'
+  ],
+  'stock-tins': [
+    'Essential Sardines Tomato Sauce',
+    'Essential Chopped Tomatoes 400g',
+    'Essential Coconut Milk 400ml',
+    'Essential Baked Beans 4 pack',
+    'Essential Tomato Puree',
+    'Essential Porridge Oats 1kg',
+    'Essential Brown Basmati Rice',
+    'Essential Red Lentils 500g',
+    'Essential Penne 500g',
+    'Waitrose Chia Seeds',
+    'Essential Vegetable Stock Cubes',
+    'Essential Dark Soy Sauce',
+    'Essential Chicken Noodles',
+    'Essential Macaroni Cheese',
+    'Essential Italian Style Ground Coffee'
+  ],
+  'stock-snacks': [
+    'Waitrose Mixed Nuts 400g',
+    'Meridian Smooth Almond Butter',
+    'Kallo Rice Cakes Plain',
+    'Lindt Excellence 85 Dark Chocolate',
+    'Essential Olive Oil 500ml',
+    'Essential Clear Honey',
+    'Essential Sparkling Water Cans',
+    'Essential Sweet Potatoes',
+    'Essential Mature Cheddar 400g'
+  ],
+  'stock-frozen': [
+    'Essential Garden Peas 900g',
+    'Essential Fish Fingers 10'
+  ]
+};
+
+function copyList(btn, listId) {
+  var text = multiSearchLists[listId].join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '✅ Copied! Paste into Waitrose Multi-Search';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = '📋 Copy for Waitrose Multi-Search';
+      btn.classList.remove('copied');
+    }, 3000);
+  });
+}
+
+function copyAll(btn, group) {
+  var keys = Object.keys(multiSearchLists).filter(function(k) { return k.startsWith(group); });
+  var all = [];
+  keys.forEach(function(k) { all = all.concat(multiSearchLists[k]); });
+  var text = all.join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    btn.textContent = '✅ Copied ' + all.length + ' items! Paste into Waitrose Multi-Search';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = group === 'fresh' ? '📋 Copy ALL Fresh Items' : '📋 Copy ALL Stock Items';
+      btn.classList.remove('copied');
+    }, 3000);
+  });
+}
+</script>
+</body>
+</html>
