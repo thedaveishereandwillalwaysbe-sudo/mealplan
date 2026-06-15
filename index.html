@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Back In Shape — Household Meal Plan v6</title>
+<title>Back In Shape — Household Meal Plan v7</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap');
   :root {
@@ -122,7 +122,7 @@
 <header>
   <div class="container">
     <h1>Back In Shape — Household Meal Plan</h1>
-    <p>v6 • Waitrose Essential • 3 Adults + 1 Child (age 6) • Two-Week Rotation • DREO ChefMaker + Slow Cooker</p>
+    <p>v7 • Waitrose Essential • 3 Adults + 1 Child (age 6) • Two-Week Rotation • DREO ChefMaker + Slow Cooker</p>
   </div>
 </header>
 <div class="container">
@@ -179,6 +179,10 @@
         <tr><td><strong>Blueberries</strong></td><td>Essential Blueberries</td><td>2 punnets</td><td class="price">~£3.00</td><td>5–7 days</td></tr>
         <tr><td><strong>Skimmed milk</strong></td><td><a href="https://www.trolley.co.uk/product/essential-waitrose-british-free-range-semi-skimmed-milk/DOE020" target="_blank">Essential Free Range Milk 2pt</a></td><td>3 cartons</td><td class="price">£3.75 <span class="badge badge-confirmed">✓</span></td><td>7 days once opened</td></tr>
         <tr><td><strong>Bread</strong></td><td>Essential Wholemeal Bread 800g</td><td>1 loaf</td><td class="price">~£1.20</td><td>5 days (freeze half)</td></tr>
+        <tr><td><strong>Garlic</strong></td><td>Essential Garlic (bulbs)</td><td>1 pack (3 bulbs)</td><td class="price">~£0.85</td><td>Weeks. Batch chicken, Bolognese, lemon chicken, dhal.</td></tr>
+        <tr><td><strong>Lemons</strong></td><td>Essential Lemons</td><td>1 pack (4–5)</td><td class="price">~£0.90</td><td>2+ weeks. Batch chicken, lemon herb chicken, salads, salmon.</td></tr>
+        <tr><td><strong>Onions</strong></td><td>Essential Brown Onions</td><td>1 pack (~1kg)</td><td class="price">~£0.95</td><td>Weeks cool/dark. Bolognese + dhal.</td></tr>
+        <tr><td><strong>Fresh ginger</strong></td><td>Essential Ginger Root</td><td>1 piece</td><td class="price">~£0.40</td><td>2+ weeks. Dhal (or use dried — see spices).</td></tr>
       </table>
     </div>
 
@@ -239,6 +243,25 @@
         <tr><td><strong>Sparkling water</strong></td><td>Essential Sparkling Water 8-pk cans</td><td>2 packs</td><td class="price">~£4.00</td><td>Months</td></tr>
         <tr><td><strong>Sweet potatoes</strong></td><td>Essential Sweet Potatoes</td><td>~800g</td><td class="price">~£1.50</td><td>2–3 weeks cool dark place</td></tr>
         <tr><td><strong>Cheddar cheese</strong></td><td>Essential Mature Cheddar 400g</td><td>1 block</td><td class="price">~£3.50</td><td>2–3 weeks sealed</td></tr>
+        <tr><td><strong>Butter</strong></td><td>Essential Salted Butter 250g</td><td>1 pack</td><td class="price">~£1.80</td><td>Weeks. Child pasta + general cooking.</td></tr>
+        <tr><td><strong>Parmesan</strong></td><td>Essential Italian Hard Cheese (parmesan) ~200g</td><td>1</td><td class="price">~£2.50</td><td>Weeks sealed. Child penne nights (or sub cheddar).</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2><span class="badge badge-snack">AROMATICS</span> Dried Herbs &amp; Spices (one-off / lasts months)</h2>
+      <button class="copy-btn" onclick="copyList(this, 'stock-spices')">📋 Copy for Waitrose Multi-Search</button>
+      <p style="font-size:0.82em;color:var(--muted);margin-bottom:4px;">Named in the recipes but missing from earlier lists. Most are months-long pantry items — buy once, not weekly. Skip any you already have.</p>
+      <table>
+        <tr><th>Item</th><th>Product</th><th>Qty</th><th>Price</th><th>Used in</th></tr>
+        <tr><td><strong>Smoked paprika</strong></td><td>Essential Smoked Paprika</td><td>1 jar</td><td class="price">~£1.20</td><td>Week B batch chicken</td></tr>
+        <tr><td><strong>Ground cumin</strong></td><td>Essential Ground Cumin</td><td>1 jar</td><td class="price">~£1.00</td><td>Week B chicken + dhal</td></tr>
+        <tr><td><strong>Ground turmeric</strong></td><td>Essential Ground Turmeric</td><td>1 jar</td><td class="price">~£1.00</td><td>Dhal</td></tr>
+        <tr><td><strong>Ground coriander</strong></td><td>Essential Ground Coriander</td><td>1 jar</td><td class="price">~£1.00</td><td>Dhal</td></tr>
+        <tr><td><strong>Dried mixed herbs / oregano</strong></td><td>Essential Mixed Herbs (or Oregano)</td><td>1 jar</td><td class="price">~£0.90</td><td>Batch chicken + Bolognese</td></tr>
+        <tr><td><strong>Dried thyme or rosemary</strong></td><td>Essential Dried Thyme</td><td>1 jar</td><td class="price">~£0.90</td><td>Lemon herb chicken</td></tr>
+        <tr><td><strong>Garlic powder</strong></td><td>Essential Garlic Granules</td><td>1 jar</td><td class="price">~£1.00</td><td>Salmon tray bake</td></tr>
+        <tr><td><strong>Chilli flakes</strong></td><td>Essential Crushed Chillies</td><td>1 jar</td><td class="price">~£1.00</td><td>Dhal (adult portion only)</td></tr>
       </table>
     </div>
 
@@ -764,6 +787,10 @@
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+smoked+back+bacon" target="_blank">Essential Smoked Back Bacon 250g</a><span class="qty">× 1 pack</span></div></div>
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+seedless+grapes" target="_blank">Essential Seedless Grapes</a><span class="qty">× 2 bags</span></div></div>
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=pineapple" target="_blank">Fresh Pineapple</a><span class="qty">× 1</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+garlic" target="_blank">Essential Garlic (bulbs)</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+lemons" target="_blank">Essential Lemons</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+brown+onions" target="_blank">Essential Brown Onions</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('fresh')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=ginger+root" target="_blank">Essential Ginger Root</a><span class="qty">× 1 piece</span></div></div>
       </div>
     </div>
 
@@ -797,6 +824,16 @@
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+mature+cheddar" target="_blank">Essential Mature Cheddar 400g</a><span class="qty">× 1 block</span></div></div>
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+garden+peas+frozen" target="_blank">Essential Garden Peas 900g (frozen)</a><span class="qty">× 1 bag</span></div></div>
         <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+fish+fingers" target="_blank">Essential Fish Fingers 10-pack (frozen)</a><span class="qty">× 1 box</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+salted+butter" target="_blank">Essential Salted Butter 250g</a><span class="qty">× 1 pack</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+italian+hard+cheese+parmesan" target="_blank">Essential Italian Hard Cheese (parmesan)</a><span class="qty">× 1</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+smoked+paprika" target="_blank">Essential Smoked Paprika</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+ground+cumin" target="_blank">Essential Ground Cumin</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+ground+turmeric" target="_blank">Essential Ground Turmeric</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+ground+coriander" target="_blank">Essential Ground Coriander</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+mixed+herbs" target="_blank">Essential Mixed Herbs / Oregano</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+dried+thyme" target="_blank">Essential Dried Thyme</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+garlic+granules" target="_blank">Essential Garlic Granules</a><span class="qty">× 1 jar</span></div></div>
+        <div class="order-item"><input type="checkbox" class="order-check" onchange="updateProgress('stock')"><div class="order-link"><a href="https://www.waitrose.com/ecom/shop/search?searchTerm=essential+crushed+chillies" target="_blank">Essential Crushed Chillies</a><span class="qty">× 1 jar</span></div></div>
       </div>
     </div>
 
@@ -808,14 +845,15 @@
 </div>
 
 <footer>
-  <strong>Household Meal Plan v6</strong> • Built from BackInShape V2.1 ROC Trilogy Programme<br>
+  <strong>Household Meal Plan v7</strong> • Built from BackInShape V2.1 ROC Trilogy Programme<br>
   <span style="font-size:0.72em;line-height:1.8;">
   v1: Initial 3-tab plan (ingredients, meals, kit) &nbsp;→&nbsp;
   v2: +Recipes tab, egg prefs (poached/HB), courgette swap, mackerel in tomato sauce, lentil dhal, stock items, Sunday-first week &nbsp;→&nbsp;
   v3: DREO ChefMaker integration, Bialetti coffee routine, slow cooker Bolognese, updated kit &nbsp;→&nbsp;
   v4: Mackerel → herring/sardines (Waitrose suspension Apr 2026), split weekly fresh / stock cupboard lists &nbsp;→&nbsp;
   v5: Order Helper tab with 48 clickable Waitrose search links + progress tracking &nbsp;→&nbsp;
-v6: Multi-Search copy buttons — one click copies formatted list for Waitrose Multi-Search paste. Copy All buttons per section. with 48 clickable Waitrose search links + progress tracking
+  v6: Multi-Search copy buttons — one click copies a formatted list for Waitrose Multi-Search paste, plus Copy All buttons per section &nbsp;→&nbsp;
+  v7: Merged the two parallel v6 files into this single index. Added recipe ingredients missing from the shopping/order lists — garlic, lemons, onions, fresh ginger, butter, parmesan + a dried herbs &amp; spices section (62 order links; copy buttons updated)
   </span>
 </footer>
 
@@ -872,7 +910,11 @@ var multiSearchLists = {
     'Essential Apples 6 pack',
     'Essential Blueberries',
     'Essential Skimmed Milk 2 pint',
-    'Essential Wholemeal Bread 800g'
+    'Essential Wholemeal Bread 800g',
+    'Essential Garlic',
+    'Essential Lemons',
+    'Essential Brown Onions',
+    'Essential Ginger Root'
   ],
   'fresh-child': [
     'Essential Pork Sausages 454g',
@@ -906,7 +948,19 @@ var multiSearchLists = {
     'Essential Clear Honey',
     'Essential Sparkling Water Cans',
     'Essential Sweet Potatoes',
-    'Essential Mature Cheddar 400g'
+    'Essential Mature Cheddar 400g',
+    'Essential Salted Butter 250g',
+    'Essential Italian Hard Cheese Parmesan'
+  ],
+  'stock-spices': [
+    'Essential Smoked Paprika',
+    'Essential Ground Cumin',
+    'Essential Ground Turmeric',
+    'Essential Ground Coriander',
+    'Essential Mixed Herbs',
+    'Essential Dried Thyme',
+    'Essential Garlic Granules',
+    'Essential Crushed Chillies'
   ],
   'stock-frozen': [
     'Essential Garden Peas 900g',
